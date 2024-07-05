@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Aubot</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Aubot</h1>
+        <p>Bienvenido a Aubot. Estoy aquí para ayudarte con tus preguntas sobre lenguaje.</p>
+    </header>
+
+    <div id="main-content">
+        <section id="chat-section">
+            <h2>Chat</h2>
+            <div id="chat-container">
+                <div id="messages"></div>
+                <input type="text" id="user-input" placeholder="Escribe un mensaje...">
+            </div>
+        </section>
+
+        <section id="library-section">
+            <h2>Mini Biblioteca</h2>
+            <div id="book-list">
+                <a href="Programa Lenguaje I Ciclo.pdf" target="_blank">Programa Lenguaje I Ciclo.pdf</a><br>
+                <a href="/books/book2.pdf" target="_blank">Libro 2</a><br>
+                <!-- Añade más enlaces a libros aquí -->
+            </div>
+        </section>
+
+        <section id="suggestions-section">
+            <h2>Sugerencias y Calificación</h2>
+            <form id="suggestions-form">
+                <label for="suggestion">Tu sugerencia:</label>
+                <textarea id="suggestion" rows="4" placeholder="Escribe tus sugerencias aquí..."></textarea>
+                <label for="rating">Calificación:</label>
+                <select id="rating">
+                    <option value="5">5 - Excelente</option>
+                    <option value="4">4 - Muy bueno</option>
+                    <option value="3">3 - Bueno</option>
+                    <option value="2">2 - Regular</option>
+                    <option value="1">1 - Malo</option>
+                </select>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Aubot. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        async function sendMessage(message) {
+            const response = await fetch('http://localhost:5000/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+            return data.response;
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', async function (e) {
+            if (e.key === 'Enter') {
+                const userInput = e.target.value;
+                addMessage(userInput, 'user-message');
+                e.target.value = '';
+
+                const botResponse = await sendMessage(userInput);
+                addMessage(botResponse, 'bot-message');
+            }
+        });
+
+        function addMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = text;
+            document.getElementById('messages').appendChild(messageDiv);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        // Script para enviar sugerencias
+        document.getElementById('suggestions-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const suggestion = document.getElementById('suggestion').value;
+            const rating = document.getElementById('rating').value;
+            const response = await fetch('http://localhost:5000/suggestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ suggestion, rating })
+            });
+            const data = await response.json();
+            alert(data.message);
+        });
+    </script>
+</body>
+</html>
